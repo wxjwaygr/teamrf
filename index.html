@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>问题分析工具</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #f2f2f7;
+            color: #1d1d1f;
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        h1 {
+            text-align: center;
+            color: #1d1d1f;
+            margin-bottom: 40px;
+            font-weight: 600;
+            font-size: 32px;
+            letter-spacing: -0.5px;
+        }
+
+        .input-section {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+
+        #question {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            background-color: #f5f5f7;
+            color: #1d1d1f;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+        }
+
+        #question:focus {
+            outline: none;
+            background-color: #fff;
+            box-shadow: inset 0 0 0 2px #0071e3;
+        }
+
+        #generate {
+            padding: 12px 24px;
+            background-color: #0071e3;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        #generate:hover {
+            background-color: #0077ed;
+            transform: translateY(-1px);
+        }
+
+        #generate:active {
+            transform: translateY(0);
+        }
+
+        #generate:disabled {
+            background-color: #d2d2d7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .analysis-section {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-top: 30px;
+        }
+
+        .analysis-card {
+            background-color: rgba(255, 255, 255, 0.8);
+            border: none;
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .analysis-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .analysis-card h2 {
+            color: #1d1d1f;
+            margin-bottom: 20px;
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+        }
+
+        .analysis-content {
+            white-space: pre-wrap;
+            font-size: 15px;
+            color: #424245;
+            line-height: 1.7;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 30px 0;
+            font-size: 16px;
+            color: #86868b;
+            position: relative;
+        }
+
+        .loading::before {
+            content: "";
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            margin-right: 10px;
+            border: 3px solid #0071e3;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+            vertical-align: middle;
+        }
+
+        .loading::after {
+            content: attr(data-time, "正在分析中...");
+            animation: dots 1.5s infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes dots {
+            0%, 20% { content: "正在分析中"; }
+            40% { content: "正在分析中."; }
+            60% { content: "正在分析中.."; }
+            80%, 100% { content: "正在分析中..."; }
+        }
+
+        .analysis-card .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            z-index: 1;
+        }
+
+        @media (max-width: 768px) {
+            .analysis-section {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            .input-section {
+                flex-direction: column;
+            }
+
+            #generate {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>问题分析工具</h1>
+        <div class="input-section">
+            <input type="text" id="question" placeholder="请输入您要分析的问题...">
+            <button id="generate">生成分析</button>
+        </div>
+        <div class="loading" id="loading"></div>
+        <div class="analysis-section">
+            <div class="analysis-card">
+                <h2>金字塔分析</h2>
+                <div class="analysis-content" id="pyramid"></div>
+            </div>
+            <div class="analysis-card">
+                <h2>第一性原理</h2>
+                <div class="analysis-content" id="first-principle"></div>
+            </div>
+            <div class="analysis-card">
+                <h2>5W分析</h2>
+                <div class="analysis-content" id="five-w"></div>
+            </div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
