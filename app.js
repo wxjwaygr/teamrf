@@ -78,7 +78,7 @@ async function getAnalysis(prompt) {
     const timeoutId = setTimeout(() => controller.abort(), 120000); // 120秒超时
 
     try {
-        const response = await fetch('/api/analysis', {
+        const response = await fetch(window.location.origin + '/api/analysis', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
